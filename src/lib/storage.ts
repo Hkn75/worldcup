@@ -156,7 +156,7 @@ export const storageService = {
   },
 
   // Cloud Database Sync helpers (using kvdb.io public key-value store with secret bucket)
-  fetchGlobalPredictions: async (): Promise<Prediction[]> => {
+  fetchGlobalPredictions: async (): Promise<Prediction[] | null> => {
     try {
       const res = await fetch('https://kvdb.io/HaZ3aignQbxP1t7E2wVAyR/predictions');
       if (res.status === 404) return [];
@@ -164,7 +164,7 @@ export const storageService = {
       return Array.isArray(data) ? data : [];
     } catch (e) {
       console.error('Error fetching global predictions:', e);
-      return [];
+      return null;
     }
   },
 
@@ -225,7 +225,7 @@ export const storageService = {
 
   syncSinglePredictionWithCloud: async (newPred: Prediction): Promise<Prediction[]> => {
     try {
-      const globalList = await storageService.fetchGlobalPredictions();
+      const globalList = await storageService.fetchGlobalPredictions() || [];
       const map = new Map<string, Prediction>();
       
       // Load global list into map

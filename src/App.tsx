@@ -32,20 +32,34 @@ function App() {
 
     // Background cloud sync on mount
     storageService.fetchGlobalPredictions().then((globalPreds) => {
-      const map = new Map<string, Prediction>();
-      // 1. Add local predictions
-      existingPreds.forEach(p => map.set(p.participantName.trim().toLowerCase(), p));
-      // 2. Merge global predictions
-      if (globalPreds && globalPreds.length > 0) {
-        globalPreds.forEach(p => map.set(p.participantName.trim().toLowerCase(), p));
+      if (globalPreds === null) {
+        // Network error, keep local predictions intact to avoid wiping data
+        return;
       }
-      const merged = Array.from(map.values());
-      storageService.savePredictions(merged);
-      setPredictions(merged);
 
-      // 3. Bidirectional sync: Push any local predictions not present in cloud back to the cloud
-      if (merged.length > 0) {
-        storageService.saveGlobalPredictions(merged);
+      // Filter out any demo data from local storage
+      const cleanLocalPreds = existingPreds.filter(
+        (p) => !['ahmet yılmaz', 'zeynep kaya', 'mehmet demir'].includes(p.participantName.trim().toLowerCase())
+      );
+
+      const hasMigrated = localStorage.getItem('wc2026_migrated_to_cloud') === 'true';
+
+      if (globalPreds.length > 0) {
+        // Cloud has data: it is the absolute source of truth. Overwrite local storage.
+        storageService.savePredictions(globalPreds);
+        setPredictions(globalPreds);
+        localStorage.setItem('wc2026_migrated_to_cloud', 'true');
+      } else if (!hasMigrated && cleanLocalPreds.length > 0) {
+        // One-time migration: cloud is empty but we have local predictions. Push them.
+        storageService.saveGlobalPredictions(cleanLocalPreds);
+        storageService.savePredictions(cleanLocalPreds);
+        setPredictions(cleanLocalPreds);
+        localStorage.setItem('wc2026_migrated_to_cloud', 'true');
+      } else {
+        // Cloud is empty and migration has run. Overwrite local storage to match cloud (empty).
+        storageService.savePredictions([]);
+        setPredictions([]);
+        localStorage.setItem('wc2026_migrated_to_cloud', 'true');
       }
     });
 
