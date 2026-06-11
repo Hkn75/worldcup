@@ -363,7 +363,7 @@ export const PredictionPage: React.FC<PredictionPageProps> = ({ onSaveSuccess })
           {/* Header block */}
           <div className="text-center space-y-3">
             <h2 className="font-display font-black text-white text-2xl sm:text-4xl tracking-wide glow-text-red uppercase leading-tight">
-              Hakan ŞEN Dünya Kupası Tahmin Yarışması
+              Dünya Kupası Tahmin Yarışması
             </h2>
             <p className="text-slate-400 font-semibold text-xs sm:text-sm tracking-widest uppercase">
               FIFA Dünya Kupası · Tahmin Oyunu
@@ -838,7 +838,7 @@ export const PredictionPage: React.FC<PredictionPageProps> = ({ onSaveSuccess })
                     // Sync with cloud database
                     await storageService.syncSinglePredictionWithCloud(payload);
                     
-                    alert('Tahminleriniz başarıyla Hakan ŞEN yarışma listesine kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde sıralamanızı görebilirsiniz.');
+                    alert('Tahminleriniz başarıyla yarışma listesine kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde sıralamanızı görebilirsiniz.');
                     
                     if (onSaveSuccess) {
                       onSaveSuccess();

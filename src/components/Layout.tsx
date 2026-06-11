@@ -26,7 +26,7 @@ export const Layout: React.FC<LayoutProps> = ({
             </div>
             <div>
               <h1 className="font-display font-black text-white text-xs sm:text-sm tracking-wider leading-none m-0 p-0 uppercase">
-                Hakan ŞEN Dünya Kupası Tahmin Yarışması
+                Dünya Kupası Tahmin Yarışması
               </h1>
               <span className="text-[8px] sm:text-[9px] text-slate-400 font-semibold tracking-widest uppercase">
                 FIFA Dünya Kupası · Tahmin Oyunu
