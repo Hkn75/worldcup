@@ -11,6 +11,7 @@ function App() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [actualResults, setActualResults] = useState<Record<number, ActualResult>>({});
   const [actualBonus, setActualBonus] = useState<ActualBonus>({});
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Bootstrap data on mount
   useEffect(() => {
@@ -98,16 +99,50 @@ function App() {
     storageService.saveGlobalActualBonus(updatedBonus);
   };
 
+  const handleRefresh = async () => {
+    setIsSyncing(true);
+    try {
+      const globalPreds = await storageService.fetchGlobalPredictions();
+      if (globalPreds) {
+        storageService.savePredictions(globalPreds);
+        setPredictions(globalPreds);
+      }
+      const globalResults = await storageService.fetchGlobalActualResults();
+      if (globalResults) {
+        storageService.saveActualResults(globalResults);
+        setActualResults(globalResults);
+      }
+      const globalBonus = await storageService.fetchGlobalActualBonus();
+      if (globalBonus) {
+        storageService.saveActualBonus(globalBonus);
+        setActualBonus(globalBonus);
+      }
+    } catch (e) {
+      console.error('Refresh sync error:', e);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleTabChange = (tab: 'prediction' | 'tracking') => {
     setActiveTab(tab);
+    // Instant local response
     setPredictions(storageService.getPredictions());
     setActualResults(storageService.getActualResults());
     setActualBonus(storageService.getActualBonus());
+
+    if (tab === 'tracking') {
+      // Pull fresh data in the background
+      handleRefresh();
+    }
   };
 
   const handlePredictionSaved = () => {
+    // Re-read local storage
     setPredictions(storageService.getPredictions());
     setActiveTab('tracking');
+    // Fetch fresh cloud values
+    handleRefresh();
   };
 
   return (
@@ -120,6 +155,8 @@ function App() {
           actualResults={actualResults}
           actualBonus={actualBonus}
           onDataUpdate={handleDataUpdate}
+          onRefresh={handleRefresh}
+          isSyncing={isSyncing}
         />
       )}
     </Layout>

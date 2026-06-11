@@ -19,6 +19,8 @@ interface TrackingPageProps {
     actualResults: Record<number, ActualResult>,
     actualBonus: ActualBonus
   ) => void;
+  onRefresh?: () => Promise<void>;
+  isSyncing?: boolean;
 }
 
 type Tab = 'leaderboard' | 'matches' | 'matrix' | 'admin';
@@ -27,7 +29,9 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({
   predictions,
   actualResults,
   actualBonus,
-  onDataUpdate
+  onDataUpdate,
+  onRefresh,
+  isSyncing = false
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('leaderboard');
   
@@ -132,6 +136,21 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({
           </button>
         ))}
       </div>
+
+      {/* Sync Status / Refresh Button */}
+      {onRefresh && (
+        <div className="flex justify-center items-center gap-2 text-xs select-none">
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={isSyncing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-light/30 border border-slate-800 hover:bg-primary-light/60 hover:text-white text-slate-400 font-bold transition-all cursor-pointer disabled:opacity-50"
+          >
+            <span className={`inline-block ${isSyncing ? 'animate-spin' : ''}`}>🔄</span>
+            {isSyncing ? 'Bulut ile senkronize ediliyor...' : 'Buluttan Verileri Yenile'}
+          </button>
+        </div>
+      )}
 
       {/* Tab 1: Sıralama */}
       {activeTab === 'leaderboard' && (
