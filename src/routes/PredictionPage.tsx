@@ -260,7 +260,7 @@ export const PredictionPage: React.FC = () => {
           {/* Header block */}
           <div className="text-center space-y-3">
             <h2 className="font-display font-black text-white text-2xl sm:text-4xl tracking-wide glow-text-red uppercase leading-tight">
-              Aurotrans Dünya Kupası Tahmin Yarışması
+              Hakan ŞEN Dünya Kupası Tahmin Yarışması
             </h2>
             <p className="text-slate-400 font-semibold text-xs sm:text-sm tracking-widest uppercase">
               FIFA Dünya Kupası · Tahmin Oyunu
@@ -721,7 +721,7 @@ export const PredictionPage: React.FC = () => {
                     }
                     storageService.savePredictions(existing);
                     storageService.clearDraftPrediction();
-                    alert('Tahminleriniz başarıyla Aurotrans yarışma listesine kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde sıralamanızı görebilirsiniz.');
+                    alert('Tahminleriniz başarıyla Hakan ŞEN yarışma listesine kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde sıralamanızı görebilirsiniz.');
                     setCopyToast('Tahminleriniz başarıyla listeye kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde görebilirsiniz.');
                     setTimeout(() => setCopyToast(null), 5000);
                   }}
