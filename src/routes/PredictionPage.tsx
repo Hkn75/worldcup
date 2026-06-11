@@ -6,12 +6,14 @@ import { GroupCard } from '../components/GroupCard';
 import { Bracket } from '../components/Bracket';
 import { teams } from '../data/teams';
 import { groupMatches } from '../data/groupMatches';
-import { buildKnockoutMatches } from '../lib/bracket';
+import { buildKnockoutMatches, getBestThirdPlacedTeams, resolveTeamForSlotSource } from '../lib/bracket';
 import { calculateGroupStandings } from '../lib/groupStandings';
 import { storageService } from '../lib/storage';
 import { validateParticipantName, getMissingGroupPredictions, getMissingKnockoutPredictions } from '../lib/validation';
 import { exportPredictionToString } from '../lib/predictionExport';
 import { getPlaceholderTeamName } from '../components/MatchCard';
+import { bracketSlots } from '../data/bracketSlots';
+import { findThirdPlaceMapping } from '../data/thirdPlaceScenarios';
 
 type Step = 'intro' | 'groups' | 'knockout' | 'bonus' | 'submit';
 
@@ -86,6 +88,103 @@ export const PredictionPage: React.FC = () => {
     }
     triggerSaveToast();
     setStep('groups');
+  };
+
+  const handleGenerateRandomPredictions = () => {
+    let currentName = participantName.trim();
+    if (!currentName) {
+      currentName = 'Rastgele Tahminci';
+      setParticipantName(currentName);
+    }
+    
+    // 1. Generate random group stage scores (0 to 3 goals)
+    const tempGroupPredictions: Record<number, GroupPrediction> = {};
+    groupMatches.forEach((m) => {
+      tempGroupPredictions[m.id] = {
+        homeGoals: Math.floor(Math.random() * 4),
+        awayGoals: Math.floor(Math.random() * 4)
+      };
+    });
+    setGroupPredictions(tempGroupPredictions);
+
+    // 2. Calculate standings to resolve R32 slots
+    const standingsMap: Record<string, any> = {};
+    const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+    groups.forEach((gLetter) => {
+      const groupTeams = teams.filter((t) => t.group === gLetter);
+      const res = calculateGroupStandings(gLetter, groupTeams, groupMatches, tempGroupPredictions);
+      standingsMap[gLetter] = res.standings;
+    });
+
+    // 3. Resolve knockout bracket round by round
+    const tempKnockoutPredictions: Record<number, KnockoutPrediction> = {};
+    const { qualified } = getBestThirdPlacedTeams(standingsMap);
+    const qualifiedGroupLetters = qualified.map(q => q.groupLetter);
+    const thirdPlaceMapping = findThirdPlaceMapping(qualifiedGroupLetters);
+
+    if (thirdPlaceMapping) {
+      const resolvedMatches: Record<number, { homeTeamId: string; awayTeamId: string; winnerTeamId?: string }> = {};
+      const sortedSlots = [...bracketSlots].sort((a, b) => a.matchId - b.matchId);
+
+      for (const slot of sortedSlots) {
+        const homeTeamId = resolveTeamForSlotSource(slot.homeSource, standingsMap, thirdPlaceMapping, resolvedMatches);
+        const awayTeamId = resolveTeamForSlotSource(slot.awaySource, standingsMap, thirdPlaceMapping, resolvedMatches);
+
+        const homeGoals = Math.floor(Math.random() * 4);
+        const awayGoals = Math.floor(Math.random() * 4);
+
+        let winnerTeamId = '';
+        if (homeGoals > awayGoals) {
+          winnerTeamId = homeTeamId;
+        } else if (homeGoals < awayGoals) {
+          winnerTeamId = awayTeamId;
+        } else {
+          winnerTeamId = Math.random() > 0.5 ? homeTeamId : awayTeamId;
+        }
+
+        resolvedMatches[slot.matchId] = {
+          homeTeamId,
+          awayTeamId,
+          winnerTeamId
+        };
+
+        tempKnockoutPredictions[slot.matchId] = {
+          homeTeamId,
+          awayTeamId,
+          homeGoals,
+          awayGoals,
+          winnerTeamId
+        };
+      }
+      setKnockoutPredictions(tempKnockoutPredictions);
+    }
+
+    // 4. Calculate bonus podium
+    const finalPred = tempKnockoutPredictions[104];
+    const thirdPred = tempKnockoutPredictions[103];
+    const tempBonus = {
+      champion: finalPred.winnerTeamId,
+      runnerUp: finalPred.winnerTeamId === finalPred.homeTeamId ? finalPred.awayTeamId : finalPred.homeTeamId,
+      third: thirdPred.winnerTeamId,
+      fourth: thirdPred.winnerTeamId === thirdPred.homeTeamId ? thirdPred.awayTeamId : thirdPred.homeTeamId
+    };
+    setBonus(tempBonus);
+
+    // 5. Save draft in local storage
+    const draft = {
+      participantName: currentName,
+      groupPredictions: tempGroupPredictions,
+      knockoutPredictions: tempKnockoutPredictions,
+      bonus: tempBonus,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    storageService.saveDraftPrediction(draft);
+
+    // 6. Go straight to the submit page
+    setStep('submit');
+    setSaveToast('Rastgele örnek tahminler başarıyla oluşturuldu.');
+    setTimeout(() => setSaveToast(null), 3000);
   };
 
   // Group Predictions updates
@@ -374,6 +473,14 @@ export const PredictionPage: React.FC = () => {
               className="w-full py-4.5 px-4 flex items-center justify-center gap-2 font-display font-black text-sm text-white bg-secondary hover:bg-secondary-hover rounded-xl shadow-lg hover:shadow-secondary/20 transition-all active:scale-98 cursor-pointer"
             >
               <Play size={16} /> Tahminleri Doldurmaya Başla
+            </button>
+
+            <button
+              type="button"
+              onClick={handleGenerateRandomPredictions}
+              className="w-full py-3.5 px-4 flex items-center justify-center gap-2 font-display font-extrabold text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl shadow-md transition-all active:scale-98 cursor-pointer mt-2"
+            >
+              🎲 Örnek Tahmin Oluştur (Rastgele)
             </button>
           </div>
 
