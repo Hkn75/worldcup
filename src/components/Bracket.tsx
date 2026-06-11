@@ -106,7 +106,7 @@ export const Bracket: React.FC<BracketProps> = ({
           return (
             <div
               key={round.value}
-              className={`flex-1 min-w-[220px] flex flex-col gap-6 transition-all duration-300 h-full ${
+              className={`flex-1 min-w-[290px] flex flex-col gap-6 transition-all duration-300 h-full ${
                 isActive ? 'opacity-100 scale-100' : 'opacity-65 hover:opacity-100'
               }`}
             >

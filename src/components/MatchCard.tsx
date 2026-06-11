@@ -86,10 +86,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         <span className="bg-primary-light px-2 py-0.5 rounded border border-slate-800">Maç #{matchId}</span>
       </div>
 
-      <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+      <div className="flex items-center justify-between gap-2">
         
         {/* Home Team */}
-        <div className="flex items-center gap-2 sm:gap-3 w-[38%]">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
           {home.flagCode ? (
             <img
               src={`https://flagcdn.com/w40/${home.flagCode}.png`}
@@ -108,7 +108,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         </div>
 
         {/* Score Inputs */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 px-1">
           <ScoreInput
             value={homeGoals}
             onChange={(val) => onScoreChange(val, awayGoals)}
@@ -123,7 +123,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         </div>
 
         {/* Away Team */}
-        <div className="flex items-center justify-end gap-2 sm:gap-3 w-[38%] text-right">
+        <div className="flex items-center justify-end gap-2 sm:gap-3 flex-1 min-w-0 text-right">
           <span className={`font-semibold text-xs sm:text-sm truncate ${winnerTeamId === awayTeamId && !away.isPlaceholder ? 'text-emerald-400 font-extrabold' : 'text-white'}`}>
             {away.name}
           </span>

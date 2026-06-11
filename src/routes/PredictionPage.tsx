@@ -720,6 +720,7 @@ export const PredictionPage: React.FC = () => {
                       existing.push(payload);
                     }
                     storageService.savePredictions(existing);
+                    storageService.clearDraftPrediction();
                     alert('Tahminleriniz başarıyla Aurotrans yarışma listesine kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde sıralamanızı görebilirsiniz.');
                     setCopyToast('Tahminleriniz başarıyla listeye kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde görebilirsiniz.');
                     setTimeout(() => setCopyToast(null), 5000);
