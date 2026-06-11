@@ -158,7 +158,7 @@ export const storageService = {
   // Cloud Database Sync helpers (using kvdb.io public key-value store with secret bucket)
   fetchGlobalPredictions: async (): Promise<Prediction[]> => {
     try {
-      const res = await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/predictions');
+      const res = await fetch('https://kvdb.io/HaZ3aignQbxP1t7E2wVAyR/predictions');
       if (res.status === 404) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : [];
@@ -170,7 +170,7 @@ export const storageService = {
 
   saveGlobalPredictions: async (list: Prediction[]): Promise<void> => {
     try {
-      await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/predictions', {
+      await fetch('https://kvdb.io/HaZ3aignQbxP1t7E2wVAyR/predictions', {
         method: 'POST',
         body: JSON.stringify(list)
       });
@@ -181,7 +181,7 @@ export const storageService = {
 
   fetchGlobalActualResults: async (): Promise<Record<number, ActualResult> | null> => {
     try {
-      const res = await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/actual_results');
+      const res = await fetch('https://kvdb.io/HaZ3aignQbxP1t7E2wVAyR/actual_results');
       if (res.status === 404) return null;
       return await res.json();
     } catch (e) {
@@ -192,7 +192,7 @@ export const storageService = {
 
   saveGlobalActualResults: async (results: Record<number, ActualResult>): Promise<void> => {
     try {
-      await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/actual_results', {
+      await fetch('https://kvdb.io/HaZ3aignQbxP1t7E2wVAyR/actual_results', {
         method: 'POST',
         body: JSON.stringify(results)
       });
@@ -203,7 +203,7 @@ export const storageService = {
 
   fetchGlobalActualBonus: async (): Promise<ActualBonus | null> => {
     try {
-      const res = await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/actual_bonus');
+      const res = await fetch('https://kvdb.io/HaZ3aignQbxP1t7E2wVAyR/actual_bonus');
       if (res.status === 404) return null;
       return await res.json();
     } catch (e) {
@@ -214,7 +214,7 @@ export const storageService = {
 
   saveGlobalActualBonus: async (bonus: ActualBonus): Promise<void> => {
     try {
-      await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/actual_bonus', {
+      await fetch('https://kvdb.io/HaZ3aignQbxP1t7E2wVAyR/actual_bonus', {
         method: 'POST',
         body: JSON.stringify(bonus)
       });

@@ -32,14 +32,20 @@ function App() {
 
     // Background cloud sync on mount
     storageService.fetchGlobalPredictions().then((globalPreds) => {
+      const map = new Map<string, Prediction>();
+      // 1. Add local predictions
+      existingPreds.forEach(p => map.set(p.participantName.trim().toLowerCase(), p));
+      // 2. Merge global predictions
       if (globalPreds && globalPreds.length > 0) {
-        // Merge global with local (preferring global updates since they represent submissions)
-        const map = new Map<string, Prediction>();
-        existingPreds.forEach(p => map.set(p.participantName.trim().toLowerCase(), p));
         globalPreds.forEach(p => map.set(p.participantName.trim().toLowerCase(), p));
-        const merged = Array.from(map.values());
-        storageService.savePredictions(merged);
-        setPredictions(merged);
+      }
+      const merged = Array.from(map.values());
+      storageService.savePredictions(merged);
+      setPredictions(merged);
+
+      // 3. Bidirectional sync: Push any local predictions not present in cloud back to the cloud
+      if (merged.length > 0) {
+        storageService.saveGlobalPredictions(merged);
       }
     });
 
