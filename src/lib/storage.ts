@@ -153,5 +153,92 @@ export const storageService = {
     storageService.savePredictions([p1, p2, p3]);
     storageService.saveActualResults(actualResults);
     storageService.saveActualBonus({});
+  },
+
+  // Cloud Database Sync helpers (using kvdb.io public key-value store with secret bucket)
+  fetchGlobalPredictions: async (): Promise<Prediction[]> => {
+    try {
+      const res = await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/predictions');
+      if (res.status === 404) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error('Error fetching global predictions:', e);
+      return [];
+    }
+  },
+
+  saveGlobalPredictions: async (list: Prediction[]): Promise<void> => {
+    try {
+      await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/predictions', {
+        method: 'POST',
+        body: JSON.stringify(list)
+      });
+    } catch (e) {
+      console.error('Error saving global predictions:', e);
+    }
+  },
+
+  fetchGlobalActualResults: async (): Promise<Record<number, ActualResult> | null> => {
+    try {
+      const res = await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/actual_results');
+      if (res.status === 404) return null;
+      return await res.json();
+    } catch (e) {
+      console.error('Error fetching global actual results:', e);
+      return null;
+    }
+  },
+
+  saveGlobalActualResults: async (results: Record<number, ActualResult>): Promise<void> => {
+    try {
+      await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/actual_results', {
+        method: 'POST',
+        body: JSON.stringify(results)
+      });
+    } catch (e) {
+      console.error('Error saving global actual results:', e);
+    }
+  },
+
+  fetchGlobalActualBonus: async (): Promise<ActualBonus | null> => {
+    try {
+      const res = await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/actual_bonus');
+      if (res.status === 404) return null;
+      return await res.json();
+    } catch (e) {
+      console.error('Error fetching global actual bonus:', e);
+      return null;
+    }
+  },
+
+  saveGlobalActualBonus: async (bonus: ActualBonus): Promise<void> => {
+    try {
+      await fetch('https://kvdb.io/wc2026_hakansen_secret_db_9384729/actual_bonus', {
+        method: 'POST',
+        body: JSON.stringify(bonus)
+      });
+    } catch (e) {
+      console.error('Error saving global actual bonus:', e);
+    }
+  },
+
+  syncSinglePredictionWithCloud: async (newPred: Prediction): Promise<Prediction[]> => {
+    try {
+      const globalList = await storageService.fetchGlobalPredictions();
+      const map = new Map<string, Prediction>();
+      
+      // Load global list into map
+      globalList.forEach(p => map.set(p.participantName.trim().toLowerCase(), p));
+      // Overwrite/insert the new one
+      map.set(newPred.participantName.trim().toLowerCase(), newPred);
+      
+      const merged = Array.from(map.values());
+      await storageService.saveGlobalPredictions(merged);
+      return merged;
+    } catch (e) {
+      console.error('Error syncing single prediction:', e);
+      return [];
+    }
   }
 };

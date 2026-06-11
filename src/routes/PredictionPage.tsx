@@ -17,7 +17,11 @@ import { findThirdPlaceMapping } from '../data/thirdPlaceScenarios';
 
 type Step = 'intro' | 'groups' | 'knockout' | 'bonus' | 'submit';
 
-export const PredictionPage: React.FC = () => {
+interface PredictionPageProps {
+  onSaveSuccess?: () => void;
+}
+
+export const PredictionPage: React.FC<PredictionPageProps> = ({ onSaveSuccess }) => {
   const [step, setStep] = useState<Step>('intro');
   const [participantName, setParticipantName] = useState('');
   
@@ -817,7 +821,7 @@ export const PredictionPage: React.FC = () => {
               <div className="space-y-3">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     const payload = buildExportPrediction();
                     const existing = storageService.getPredictions();
                     const idx = existing.findIndex(p => p.participantName.toLowerCase() === payload.participantName.toLowerCase());
@@ -826,11 +830,19 @@ export const PredictionPage: React.FC = () => {
                     } else {
                       existing.push(payload);
                     }
+                    
+                    // Save locally first
                     storageService.savePredictions(existing);
                     storageService.clearDraftPrediction();
+                    
+                    // Sync with cloud database
+                    await storageService.syncSinglePredictionWithCloud(payload);
+                    
                     alert('Tahminleriniz başarıyla Hakan ŞEN yarışma listesine kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde sıralamanızı görebilirsiniz.');
-                    setCopyToast('Tahminleriniz başarıyla listeye kaydedildi! "Takip & Canlı Sonuçlar" sekmesinde görebilirsiniz.');
-                    setTimeout(() => setCopyToast(null), 5000);
+                    
+                    if (onSaveSuccess) {
+                      onSaveSuccess();
+                    }
                   }}
                   disabled={participantName === ''}
                   className="w-full py-4 px-4 flex items-center justify-center gap-2 font-display font-black text-sm text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg hover:shadow-emerald-600/20 transition-all active:scale-98 cursor-pointer"
