@@ -21,26 +21,14 @@ function App() {
       localStorage.setItem('wc2026_data_version', DATA_VERSION);
     }
 
-    // Check if we need to seed demo data
+    // Check if we need to seed data
     const existingPreds = storageService.getPredictions();
     const existingResults = storageService.getActualResults();
     const existingBonus = storageService.getActualBonus();
 
-    // If there are no predictions and no actual results played, load demo data automatically
-    const isNewUser = existingPreds.length === 0 && !Object.values(existingResults).some(r => r.played);
-
-    if (isNewUser) {
-      storageService.loadDemoData();
-      setPredictions(storageService.getPredictions());
-      setActualResults(storageService.getActualResults());
-      setActualBonus(storageService.getActualBonus());
-      // Start in tracking view so user immediately sees the beautiful leaderboard demo
-      setActiveTab('tracking');
-    } else {
-      setPredictions(existingPreds);
-      setActualResults(existingResults);
-      setActualBonus(existingBonus);
-    }
+    setPredictions(existingPreds);
+    setActualResults(existingResults);
+    setActualBonus(existingBonus);
   }, []);
 
   const handleDataUpdate = (
